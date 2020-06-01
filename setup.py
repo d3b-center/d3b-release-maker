@@ -1,5 +1,6 @@
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 req_file = os.path.join(root_dir, "requirements.txt")
@@ -8,7 +9,11 @@ with open(req_file) as f:
 
 setup(
     name="d3b-release-maker",
-    version="1.0.0",
+    use_scm_version={
+        "local_scheme": "dirty-tag",
+        "version_scheme": "post-release",
+    },
+    setup_requires=["setuptools_scm"],
     description="D3b software release authoring tool",
     author=(
         "Center for Data Driven Discovery in Biomedicine at the"
