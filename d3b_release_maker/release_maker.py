@@ -387,7 +387,7 @@ def make_release(repo, project_title, blurb_file, pre_release_script):
             )
 
         # Create and push new release branch
-        release_branch_name = f"🔖-release-{new_version}"
+        release_branch_name = f"release-{new_version}-🏷"
         print(f"Submitting release branch {release_branch_name} ...")
         subprocess.run(
             ["git", "checkout", "-b", release_branch_name],
@@ -414,7 +414,7 @@ def make_release(repo, project_title, blurb_file, pre_release_script):
         # Create GitHub Pull Request
         print("Submitting PR for release ...")
         gh_repo = Github(gh_token, base_url=GH_API).get_repo(repo)
-        pr_title = f"🔖 Release {new_version}"
+        pr_title = f"🏷 Release {new_version}"
         pr_url = None
         for p in gh_repo.get_pulls(state="open", base="master"):
             if p.title == pr_title:
