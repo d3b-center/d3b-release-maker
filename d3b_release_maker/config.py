@@ -6,7 +6,8 @@ GITHUB_API = "https://api.github.com"
 GITHUB_RAW = "https://raw.githubusercontent.com"
 
 GH_TOKEN_VAR = "GH_TOKEN"
-RELEASE_EMOJIS = "🏷🔖"
+PAST_RELEASE_EMOJIS = "🏷🔖"
+NEW_RELEASE_EMOJI = "🏷"
 EMOJI_CATEGORIES = {
     "Additions": {"✨", "🎉", "📈", "➕", "🌐", "🔀", "🔊"},
     "Documentation": {"💡", "📝"},

@@ -26,7 +26,7 @@ MINOR = "minor"
 PATCH = "patch"
 RELEASE_OPTIONS = [MAJOR, MINOR, PATCH]
 
-release_pattern = r"\s*[" + config.RELEASE_EMOJIS + r"]\s*[Rr]elease"
+release_pattern = r"\s*[" + config.PAST_RELEASE_EMOJIS + r"]\s*[Rr]elease"
 emoji_categories = {
     e: category
     for category, emoji_set in config.EMOJI_CATEGORIES.items()
@@ -387,7 +387,9 @@ def make_release(repo, project_title, blurb_file, pre_release_script):
             )
 
         # Create and push new release branch
-        release_branch_name = f"release-{new_version}-🏷"
+        release_branch_name = (
+            f"release-{new_version}-{config.NEW_RELEASE_EMOJI}"
+        )
         print(f"Submitting release branch {release_branch_name} ...")
         subprocess.run(
             ["git", "checkout", "-b", release_branch_name],
@@ -414,7 +416,7 @@ def make_release(repo, project_title, blurb_file, pre_release_script):
         # Create GitHub Pull Request
         print("Submitting PR for release ...")
         gh_repo = Github(gh_token, base_url=GH_API).get_repo(repo)
-        pr_title = f"🏷 Release {new_version}"
+        pr_title = f"{config.NEW_RELEASE_EMOJI} Release {new_version}"
         pr_url = None
         for p in gh_repo.get_pulls(state="open", base="master"):
             if p.title == pr_title:
