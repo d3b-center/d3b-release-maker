@@ -1,5 +1,17 @@
 # D3b Release Maker Change History
 
+## Release 1.1.0
+
+### Summary
+
+- Emojis: 💬 x1
+- Categories: Fixes x1
+
+### New features and changes
+
+- [#4](https://github.com/d3b-center/d3b-release-maker/pull/4) - 💬 Switch release emoji back to :label: - [2b90ba71](https://github.com/d3b-center/d3b-release-maker/commit/2b90ba71b97a288a9f327aec46921036a6ab685c) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.0.0
 
 ### Summary
