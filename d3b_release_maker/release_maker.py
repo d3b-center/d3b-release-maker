@@ -397,12 +397,17 @@ def make_release(repo, project_title, blurb_file, pre_release_script):
             capture_output=True,
         )
         subprocess.run(["git", "add", "-A"], check=True, capture_output=True)
+        commit_emoji = (
+            config.NEW_RELEASE_EMOJI_SHORTCODE
+            if hasattr(config, "NEW_RELEASE_EMOJI_SHORTCODE")
+            else config.NEW_RELEASE_EMOJI
+        )
         subprocess.run(
             [
                 "git",
                 "commit",
                 "-m",
-                f":bookmark: Release {new_version}\n\n{new_markdown}",
+                f"{commit_emoji} Release {new_version}\n\n{new_markdown}",
             ],
             check=True,
             capture_output=True,
