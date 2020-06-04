@@ -1,5 +1,17 @@
 # D3b Release Maker Change History
 
+## Release 1.0.2
+
+### Summary
+
+- Emojis: 💬 x1
+- Categories: Fixes x1
+
+### New features and changes
+
+- [#7](https://github.com/d3b-center/d3b-release-maker/pull/7) - 💬 Fix missed emoji instance - [9ea70d1c](https://github.com/d3b-center/d3b-release-maker/commit/9ea70d1c6df7f0d1bde18a3c902b4d7f1d9cc93b) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.0.1
 
 ### Summary
