@@ -129,7 +129,7 @@ class GitHubReleaseNotes:
                     )
                 break
 
-        return (emojis or {"?"}, title)
+        return (emojis, title)
 
     def _get_merged_prs(self, after):
         """
@@ -200,17 +200,35 @@ class GitHubReleaseNotes:
         """
         Converts accumulated information about the project into markdown
         """
-        messages = [
-            "### Summary",
-            "",
-            "- Emojis: "
-            + ", ".join(f"{k} x{v}" for k, v in counts["emojis"].items()),
-            "- Categories: "
-            + ", ".join(f"{k} x{v}" for k, v in counts["categories"].items()),
-            "",
-            "### New features and changes",
-            "",
-        ]
+        messages = []
+
+        if (len(counts["emojis"]) + len(counts["categories"])) > 0:
+            messages.extend(["### Summary", ""])
+            if len(counts["emojis"]) > 0:
+                emoji_sum = sum(counts["emojis"].values())
+                if len(prs) > emoji_sum:
+                    counts["emojis"]["?"] += len(prs) - emoji_sum
+                messages.append(
+                    "- Emojis: "
+                    + ", ".join(
+                        f"{k} x{v}" for k, v in counts["emojis"].items()
+                    )
+                )
+            if len(counts["categories"]) > 0:
+                category_sum = sum(counts["categories"].values())
+                if len(prs) > category_sum:
+                    counts["categories"][config.OTHER_CATEGORY] += (
+                        len(prs) - category_sum
+                    )
+                messages.append(
+                    "- Categories: "
+                    + ", ".join(
+                        f"{k} x{v}" for k, v in counts["categories"].items()
+                    )
+                )
+            messages.append("")
+
+        messages.extend(["### New features and changes", ""])
 
         for p in prs:
             userlink = f"[{p['user']['login']}]({p['user']['html_url']})"
