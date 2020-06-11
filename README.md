@@ -29,6 +29,35 @@ new release version and generates your assets and then creates
 `.github/release_assets.txt` containing a list of the files you want to upload,
 one per line, in the order that you want them to appear.
 
+## Part 3 for Python setuptools packages: Get package version from repository metadata
+
+If your repository is a Python setuptools package, you'll want to tie the
+package version to the repository release version. The easiest way to do that
+is with the `setuptools_scm` package.
+
+If your project uses a `setup.py` file, do this instead of explicitly stating a
+version:
+
+```Python
+from setuptools import setup
+
+setup(
+    use_scm_version={
+        "local_scheme": "dirty-tag",
+        "version_scheme": "post-release",
+    },
+    setup_requires=["setuptools_scm"],
+    ...
+)
+```
+
+See <https://github.com/d3b-center/d3b-release-maker/blob/master/setup.py> for
+an example.
+
+If you use one of the other setuptools configuration methods (e.g.
+`pyproject.toml`), read <https://github.com/pypa/setuptools_scm/> for the
+equivalent of the above.
+
 ## What the parts do
 
 ### What the CLI does
@@ -63,3 +92,9 @@ When a special release branch is merged into master:
 2. If a `.github/prepare_assets.sh` script exists, it is run.
 3. If a `.github/release_assets.txt` file exists, any files listed in it are
    then uploaded to the GitHub release.
+
+### What the setuptools modification does
+
+It uses the repository's semantic version release tags as the Python package
+version instead of needing to separately store the version somewhere in the
+repository files.
