@@ -1,5 +1,10 @@
 # D3b Release Maker Change History
 
+## Release 1.2.0
+
+
+
+
 ## Release 1.1.0
 
 ### Summary

@@ -1,4 +1,5 @@
 {
   "project_title": "D3b Release Maker",
-  "pre_release_script": ""
+  "pre_release_script": "",
+  "section_header": "Release "
 }
