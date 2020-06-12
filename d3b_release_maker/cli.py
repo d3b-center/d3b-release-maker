@@ -40,20 +40,8 @@ def preview_changelog_cmd(repo, blurb_file):
 
 @click.command(name="build", short_help="Generate a new release on GitHub")
 @options
-@click.option(
-    "--project_title",
-    prompt="The title of the project",
-    default="",
-    help="This will be put before the release number in the generated notes",
-)
-@click.option(
-    "--pre_release_script",
-    prompt="Shell script to run before pushing the release to GitHub",
-    default="",
-    help="Shell script to run before pushing the release to GitHub",
-)
-def make_release_cmd(repo, project_title, blurb_file, pre_release_script):
-    make_release(repo, project_title, blurb_file, pre_release_script)
+def make_release_cmd(repo, blurb_file):
+    make_release(repo, blurb_file)
 
 
 cli.add_command(preview_changelog_cmd)
