@@ -29,7 +29,22 @@ new release version and generates your assets and then creates
 `.github/release_assets.txt` containing a list of the files you want to upload,
 one per line, in the order that you want them to appear.
 
-## Part 3 for Python setuptools packages: Get package version from repository metadata
+## Part 3 release_cfg.json (semi-optional)
+
+Add a `release_maker_cfg.json` file to your repository's master branch. Its
+contents should be as follows:
+
+```json
+{
+  "project_title": "Your Repository Project Title",
+  "pre_release_script": "script/to/run/before/making/release/PR.sh"
+}
+```
+
+If this file doesn't exist, it will be automatically added during the release
+after prompts from the release maker tool.
+
+## Part 4 for Python setuptools packages: Get package version from repository metadata
 
 If your repository is a Python setuptools package, you'll want to tie the
 package version to the repository release version. The easiest way to do that

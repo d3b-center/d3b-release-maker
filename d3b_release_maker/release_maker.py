@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import stat
@@ -7,6 +8,7 @@ import time
 from collections import defaultdict
 from datetime import datetime
 
+import click
 import emoji
 import regex
 import semver
@@ -20,6 +22,7 @@ GH_API = config.GITHUB_API
 GH_RAW = config.GITHUB_RAW
 
 CHANGEFILE = "CHANGELOG.md"
+CONFIGFILE = "release_maker_cfg.json"
 
 MAJOR = "major"
 MINOR = "minor"
@@ -360,18 +363,45 @@ def new_changelog(repo, blurb_file):
         return new_version, new_markdown, changelog
 
 
-def make_release(repo, project_title, blurb_file, pre_release_script):
+def load_config():
+    """
+    Get repo config file
+    """
+    try:
+        with open(CONFIGFILE, "r") as f:
+            cfg = json.load(f)
+    except Exception:
+        cfg = {}
+
+    update = False
+    if "project_title" not in cfg:
+        cfg["project_title"] = click.prompt(
+            f"Project title not found in repo {CONFIGFILE}. Please enter one now"
+        )
+        update = True
+    if "pre_release_script" not in cfg:
+        cfg["pre_release_script"] = click.prompt(
+            f"Pre-release script path not found in repo {CONFIGFILE}."
+            " Enter one now if desired or just return to continue:",
+            default="",
+        )
+        update = True
+
+    if update:
+        with open(CONFIGFILE, "w") as f:
+            json.dump(cfg, f, indent=2)
+
+    return cfg
+
+
+def make_release(repo, blurb_file):
     """
     Generate a new changelog, run the script, and then make a PR on GitHub
     """
     gh_token = os.getenv(config.GH_TOKEN_VAR)
-
     new_version, new_markdown, changelog = new_changelog(repo, blurb_file)
 
     if changelog:
-        # Attach project header
-        changelog = f"# {project_title} Change History\n\n{changelog}"
-
         # Freshly clone repo
         tmp = os.path.join(tempfile.gettempdir(), "release_maker")
         shutil.rmtree(tmp, ignore_errors=True)
@@ -390,10 +420,17 @@ def make_release(repo, project_title, blurb_file, pre_release_script):
         )
         os.chdir(tmp)
 
-        print("Writing updated changelog file ...")
-        with open(CHANGEFILE, "w") as cl:
-            cl.write(changelog)
+        # Get the configuration
+        cfg = load_config()
 
+        # Attach project header
+        changelog = f"# {cfg['project_title']} Change History\n\n{changelog}"
+
+        print("Writing updated changelog file ...")
+        with open(CHANGEFILE, "w") as f:
+            f.write(changelog)
+
+        pre_release_script = cfg.get("pre_release_script")
         if pre_release_script:
             print(f"Executing pre-release script {pre_release_script} ...")
             mode = os.stat(pre_release_script).st_mode
