@@ -1,5 +1,19 @@
 # D3b Release Maker Change History
 
+## Release 1.1.0
+
+### Summary
+
+- Emojis: ✨ x2, 📝 x1
+- Categories: Additions x2, Documentation x1
+
+### New features and changes
+
+- [#12](https://github.com/d3b-center/d3b-release-maker/pull/12) - ✨ Move static arguments into config file - [7c8e4071](https://github.com/d3b-center/d3b-release-maker/commit/7c8e407146ac587e0dfce2cacf3179690d939f32) by [fiendish](https://github.com/fiendish)
+- [#10](https://github.com/d3b-center/d3b-release-maker/pull/10) - 📝 Add setuptools version section to readme - [8a39956d](https://github.com/d3b-center/d3b-release-maker/commit/8a39956d3e0a4a81272519b606beb3ae19fcd4b1) by [fiendish](https://github.com/fiendish)
+- [#9](https://github.com/d3b-center/d3b-release-maker/pull/9) - ✨ Skip summaries if no emojis/categories - [82b3d208](https://github.com/d3b-center/d3b-release-maker/commit/82b3d20876b2fccd9f88a14db41cdfc53df3429a) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.0.2
 
 ### Summary
