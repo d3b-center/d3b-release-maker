@@ -45,6 +45,11 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Add latest-release tag
+        run: |
+          git tag -f latest-release
+          git push -f --tags
+
       - name: Upload Assets
         run: |
           upload_url=${{ steps.create_release.outputs.upload_url }}
