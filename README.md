@@ -9,8 +9,8 @@ characteristics:
 
 ## Part 1: CLI that generates release notes and creates a PR on GitHub for review
 
-Install with pip:
-`pip install git+https://github.com/d3b-center/d3b-release-maker.git`
+Install the latest release of the release maker with pip:
+`pip install git+https://github.com/d3b-center/d3b-release-maker.git@latest-release`
 
 Create a temporary auth token on GitHub and add it to your environment as
 `GH_TOKEN`.
