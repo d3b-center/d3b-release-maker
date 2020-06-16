@@ -1,5 +1,19 @@
 # D3b Release Maker Change History
 
+## Release 1.2.0
+
+### Summary
+
+- Emojis: 🐛 x1, 📝 x1, ✨ x1
+- Categories: Fixes x1, Documentation x1, Additions x1
+
+### New features and changes
+
+- [#20](https://github.com/d3b-center/d3b-release-maker/pull/20) - 🐛 Don't fail on non-semver tags - [845ce57f](https://github.com/d3b-center/d3b-release-maker/commit/845ce57ffbb2a76b28d73e56167dda865277b7d4) by [fiendish](https://github.com/fiendish)
+- [#19](https://github.com/d3b-center/d3b-release-maker/pull/19) - 📝 Arrange readme into steps - [571b79e3](https://github.com/d3b-center/d3b-release-maker/commit/571b79e3b60ffdeeac2899e46033cd03bcd13627) by [fiendish](https://github.com/fiendish)
+- [#17](https://github.com/d3b-center/d3b-release-maker/pull/17) - ✨ Add rolling latest-release tag - [4f897d5e](https://github.com/d3b-center/d3b-release-maker/commit/4f897d5e57aba5f54e44343f19b1df8821792153) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.1.0
 
 ### Summary
