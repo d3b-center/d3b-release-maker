@@ -41,8 +41,12 @@ def split_at_pattern(text, pattern):
     """
     Split a string where a pattern begins
     """
-    start = regex.search(pattern, text).start()
-    return text[0:start], text[start:]
+    obj = regex.search(pattern, text)
+    if obj:
+        start = obj.start()
+        return text[0:start], text[start:]
+    else:
+        return text, ""
 
 
 def delay_until(datetime_of_reset):
@@ -284,14 +288,10 @@ class GitHubReleaseNotes:
         print(markdown)
         print("=" * 33 + "END DELTA" + "=" * 33)
 
-        while True:
-            release_type = input(
-                f"What type of semantic versioning release is this {RELEASE_OPTIONS}? "
-            ).lower()
-            if release_type in RELEASE_OPTIONS:
-                break
-            else:
-                print(f"'{release_type}' is not one of {RELEASE_OPTIONS}")
+        release_type = click.prompt(
+            "What type of semantic versioning release is this?",
+            type=click.Choice(RELEASE_OPTIONS),
+        )
 
         # Update release version
         prefix, prev_version = split_at_pattern(latest_tag["name"], r"\d")
