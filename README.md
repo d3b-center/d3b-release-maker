@@ -7,17 +7,12 @@ characteristics:
 - Gitmoji-style PR messages
 - Semantic versioning tags for releases (<https://semver.org>)
 
-## Part 1: CLI that generates release notes and creates a PR on GitHub for review
+## Steps for Using
 
-Install with pip:
-`pip install git+https://github.com/d3b-center/d3b-release-maker.git`
+### Step 1: Add the GitHub Actions Workflow to your project repository
 
-Create a temporary auth token on GitHub and add it to your environment as
-`GH_TOKEN`.
-
-Then run: `release --help`
-
-## Part 2: GitHub Actions Workflow that automates tagging releases and asset uploading
+This automates tagging releases and asset uploading when a new release PR is
+merged.
 
 Copy `gh_releases.yml` from this repository's `.github/workflows/` directory
 into `.github/workflows/` in your project repository. (Read more about GitHub
@@ -25,11 +20,11 @@ Actions and Workflows at <https://help.github.com/en/actions>)
 
 If you want to attach binary assets to your GitHub releases, add a
 `.github/prepare_assets.sh` script that receives one input argument with the
-new release version and generates your assets and then creates
+new release version and generates your assets and then optionally creates
 `.github/release_assets.txt` containing a list of the files you want to upload,
 one per line, in the order that you want them to appear.
 
-## Part 3 release_cfg.json (semi-optional)
+### Step 2 (optional): Add release_cfg.json to your project repository
 
 Add a `release_maker_cfg.json` file to your repository's master branch. Its
 contents should be as follows:
@@ -41,14 +36,15 @@ contents should be as follows:
 }
 ```
 
-If this file doesn't exist, it will be automatically added during the release
-after prompts from the release maker tool.
+If you skip this step, the file will be automatically added during the next
+release after prompts from the release maker CLI tool.
 
-## Part 4 for Python setuptools packages: Get package version from repository metadata
+### Step 3 (for Python setuptools packages): Tie package version to repository metadata
 
-If your repository is a Python setuptools package, you'll want to tie the
-package version to the repository release version. The easiest way to do that
-is with the `setuptools_scm` package.
+If your repository is a Python setuptools package, you can tie the package
+version to the repository release version so that you don't need to separately
+store the version in a file. The easiest way to do that is with the
+`setuptools_scm` package.
 
 If your project uses a `setup.py` file, do this instead of explicitly stating a
 version:
@@ -72,6 +68,21 @@ an example.
 If you use one of the other setuptools configuration methods (e.g.
 `pyproject.toml`), read <https://github.com/pypa/setuptools_scm/> for the
 equivalent of the above.
+
+### Step 4: Run the CLI that generates release notes and creates a PR on GitHub for review
+
+Install the latest release of the release maker with pip:
+`pip install git+https://github.com/d3b-center/d3b-release-maker.git@latest-release`
+
+Create a temporary auth token on GitHub and add it to your environment as
+`GH_TOKEN`.
+
+Then run: `release --help`
+
+### Step 5: Review and merge the PR
+
+The CLI tool creates a special release PR for everyone to review. When it's
+approved and merged, the workflow generates the release.
 
 ## What the parts do
 
@@ -102,8 +113,9 @@ When you run the `release build` command:
 
 When a special release branch is merged into master:
 
-1. Your repository is tagged with the new semantic version, and a GitHub
-   release is created with the contents of the just-merged Pull Request body.
+1. Your repository is tagged with the new semantic version and also a rolling
+   tag called 'latest-release' for use with `pip`, and a GitHub release is
+   created with the contents of the just-merged Pull Request body.
 2. If a `.github/prepare_assets.sh` script exists, it is run.
 3. If a `.github/release_assets.txt` file exists, any files listed in it are
    then uploaded to the GitHub release.
