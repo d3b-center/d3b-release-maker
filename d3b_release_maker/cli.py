@@ -1,10 +1,29 @@
 #!/usr/bin/env python
 import click
+import re
+import subprocess
 
-from d3b_release_maker.release_maker import (
-    make_release,
-    new_notes,
-)
+from d3b_release_maker.release_maker import make_release, new_notes
+
+
+def get_repository():
+    """
+    Try to retrieve the github repository by extracting it from the current git
+    repository's 'origin' url.
+    """
+    try:
+        result = subprocess.check_output(
+            ["git", "remote", "get-url", "origin"], stderr=subprocess.DEVNULL
+        )
+    except subprocess.CalledProcessError:
+        # If the git command fails, bail early
+        return None
+
+    result = result.decode().strip()
+    match = re.match(r".*:([\w\d0-9-]+\/[\w\d-]+)", result)
+    if match:
+        return match.group(1)
+    return None
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -26,6 +45,7 @@ def options(function):
         "--repo",
         prompt="The github repository (e.g. my-organization/my-project-name)",
         help="The github organization/repository to make a release for",
+        default=get_repository,
     )(function)
     return function
 
