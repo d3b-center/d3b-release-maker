@@ -7,16 +7,16 @@ import tempfile
 import time
 from collections import defaultdict
 from datetime import datetime
+from getpass import getpass
 
 import click
 import emoji
 import regex
 import semver
+from d3b_release_maker import config
 from d3b_utils.requests_retry import Session
 from github import Github
 from github.GithubException import GithubException, UnknownObjectException
-
-from d3b_release_maker import config
 
 GH_API = config.GITHUB_API
 GH_RAW = config.GITHUB_RAW
@@ -35,6 +35,12 @@ emoji_categories = {
     for category, emoji_set in config.EMOJI_CATEGORIES.items()
     for e in emoji_set
 }
+
+if not os.getenv(config.GH_TOKEN_VAR):
+    gh_token = getpass(
+        prompt=f"Required GitHub API token not found at {config.GH_TOKEN_VAR} in your environment. Please enter one here: "
+    )
+    os.environ[config.GH_TOKEN_VAR] = gh_token
 
 
 def split_at_pattern(text, pattern):
