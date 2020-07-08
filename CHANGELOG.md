@@ -1,5 +1,19 @@
 # D3b Release Maker Change History
 
+## Release 1.3.0
+
+### Summary
+
+- Emojis: ✨ x3
+- Categories: Additions x3
+
+### New features and changes
+
+- [#26](https://github.com/d3b-center/d3b-release-maker/pull/26) - ✨ Warn and give second chance if missing GH_TOKEN - [5835c1d7](https://github.com/d3b-center/d3b-release-maker/commit/5835c1d75f3544990a13138007050c23c474668c) by [fiendish](https://github.com/fiendish)
+- [#23](https://github.com/d3b-center/d3b-release-maker/pull/23) - ✨ Set default repo from git - [aae22a3a](https://github.com/d3b-center/d3b-release-maker/commit/aae22a3ac28acefd796d634b5e0b214c9c987b28) by [dankolbman](https://github.com/dankolbman)
+- [#22](https://github.com/d3b-center/d3b-release-maker/pull/22) - ✨ Add github token to script step env - [63b8a7df](https://github.com/d3b-center/d3b-release-maker/commit/63b8a7df50422b7305be062f2ebfc44bceb05612) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.2.0
 
 ### Summary
