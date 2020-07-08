@@ -16,5 +16,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest .
     - name: Test
+      env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         pytest tests
