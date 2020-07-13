@@ -12,7 +12,7 @@ def test_version(type, index):
     runner = CliRunner()
     result = runner.invoke(
         preview_changelog_cmd,
-        args='--repo d3b-center/d3b-release-maker --blurb_file ""',
+        args='--repo d3b-center/d3b-release-maker --blurb_file "" --prs_to_ignore ""',
         input=f"{type}",
     )
     assert result.exit_code == 0
