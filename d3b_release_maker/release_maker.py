@@ -144,7 +144,7 @@ class GitHubReleaseNotes:
 
         return (emojis, title)
 
-    def _get_merged_prs(self, after):
+    def _get_merged_prs(self, after, prs_to_ignore=None):
         """
         Get all non-release PRs merged into master after the given time
         """
@@ -152,11 +152,14 @@ class GitHubReleaseNotes:
         endpoint = f"{self.base_url}/pulls"
         query_params = {"base": "master", "state": "closed"}
         prs = []
+        prs_to_ignore = prs_to_ignore or {}
         for p in self.session.yield_paginated(endpoint, query_params):
             if p["merged_at"]:
                 if p["merged_at"] < after:
                     break
-                elif regex.search(release_pattern, p["title"]) is None:
+                elif (p["number"] not in prs_to_ignore) and (
+                    regex.search(release_pattern, p["title"]) is None
+                ):
                     prs.append(p)
         return prs
 
@@ -253,7 +256,7 @@ class GitHubReleaseNotes:
 
         return "\n".join(messages)
 
-    def build_release_notes(self, repo, blurb=None):
+    def build_release_notes(self, repo, blurb=None, prs_to_ignore=None):
         """
         Make release notes
         """
@@ -273,7 +276,7 @@ class GitHubReleaseNotes:
             latest_tag = {"name": "0.0.0", "date": ""}
 
         # Get all non-release PRs that were merged into master after the last release
-        prs = self._get_merged_prs(latest_tag["date"])
+        prs = self._get_merged_prs(latest_tag["date"], prs_to_ignore)
 
         # Count the emojis and fix missing spaces in titles
         counts = {"emojis": defaultdict(int), "categories": defaultdict(int)}
@@ -312,7 +315,7 @@ class GitHubReleaseNotes:
         return version, markdown
 
 
-def new_notes(repo, blurb_file):
+def new_notes(repo, blurb_file, prs_to_ignore):
     """
     Build notes for new changes
     """
@@ -321,10 +324,15 @@ def new_notes(repo, blurb_file):
         with open(blurb_file, "r") as bf:
             blurb = bf.read().strip()
 
-    return GitHubReleaseNotes().build_release_notes(repo=repo, blurb=blurb)
+    if prs_to_ignore != "":
+        prs_to_ignore = {int(k.strip()) for k in prs_to_ignore.split(",")}
+
+    return GitHubReleaseNotes().build_release_notes(
+        repo=repo, blurb=blurb, prs_to_ignore=prs_to_ignore
+    )
 
 
-def new_changelog(repo, blurb_file):
+def new_changelog(repo, blurb_file, prs_to_ignore):
     """
     Creates release notes markdown containing:
     - The next release version number
@@ -336,7 +344,7 @@ def new_changelog(repo, blurb_file):
 
     # Build notes for new changes
 
-    new_version, new_markdown = new_notes(repo, blurb_file)
+    new_version, new_markdown = new_notes(repo, blurb_file, prs_to_ignore)
 
     if new_version not in new_markdown.partition("\n")[0]:
         print(
@@ -400,12 +408,14 @@ def load_config():
     return cfg
 
 
-def make_release(repo, blurb_file):
+def make_release(repo, blurb_file, prs_to_ignore):
     """
     Generate a new changelog, run the script, and then make a PR on GitHub
     """
     gh_token = os.getenv(config.GH_TOKEN_VAR)
-    new_version, new_markdown, changelog = new_changelog(repo, blurb_file)
+    new_version, new_markdown, changelog = new_changelog(
+        repo, blurb_file, prs_to_ignore
+    )
 
     if changelog:
         # Freshly clone repo

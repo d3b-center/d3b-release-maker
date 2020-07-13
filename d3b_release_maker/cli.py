@@ -36,6 +36,12 @@ def cli():
 
 def options(function):
     function = click.option(
+        "--prs_to_ignore",
+        prompt="Comma-separated list of PR numbers to ignore",
+        help="Comma-separated list of PR numbers to ignore",
+        default="",
+    )(function)
+    function = click.option(
         "--blurb_file",
         prompt="Optional markdown file containing a custom message to prepend to the notes for this release",
         default="",
@@ -54,14 +60,14 @@ def options(function):
     name="preview", short_help="Preview the changes for a new release"
 )
 @options
-def preview_changelog_cmd(repo, blurb_file):
-    new_notes(repo, blurb_file)
+def preview_changelog_cmd(repo, blurb_file, prs_to_ignore):
+    new_notes(repo, blurb_file, prs_to_ignore)
 
 
 @click.command(name="build", short_help="Generate a new release on GitHub")
 @options
-def make_release_cmd(repo, blurb_file):
-    make_release(repo, blurb_file)
+def make_release_cmd(repo, blurb_file, prs_to_ignore):
+    make_release(repo, blurb_file, prs_to_ignore)
 
 
 cli.add_command(preview_changelog_cmd)
