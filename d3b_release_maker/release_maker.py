@@ -169,7 +169,7 @@ class GitHubReleaseNotes:
                     and (regex.search(release_pattern, p["title"]) is None)
                 ):
                     prs.append(p)
-        return prs
+        return sorted(prs, key=lambda x: x["merged_at"], reverse=True)
 
     def _get_commit_date(self, commit_url):
         """
