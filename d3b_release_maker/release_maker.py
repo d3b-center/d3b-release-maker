@@ -159,11 +159,14 @@ class GitHubReleaseNotes:
         prs = []
         prs_to_ignore = prs_to_ignore or {}
         for p in self.session.yield_paginated(endpoint, query_params):
-            if p["merged_at"]:
-                if p["merged_at"] < after:
+            if p["merged_at"]:  # only the merged PRs
+                if p["updated_at"] < after:
+                    # stop looking if last update was before the last release
                     break
-                elif (p["number"] not in prs_to_ignore) and (
-                    regex.search(release_pattern, p["title"]) is None
+                elif (
+                    (p["merged_at"] > after)  # ignore old PRs with updates
+                    and (p["number"] not in prs_to_ignore)
+                    and (regex.search(release_pattern, p["title"]) is None)
                 ):
                     prs.append(p)
         return prs
