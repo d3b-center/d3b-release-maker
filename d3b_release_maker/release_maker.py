@@ -150,7 +150,12 @@ class GitHubReleaseNotes:
         """
         print("Fetching PRs ...")
         endpoint = f"{self.base_url}/pulls"
-        query_params = {"base": "master", "state": "closed"}
+        query_params = {
+            "sort": "updated",
+            "direction": "desc",
+            "base": "master",
+            "state": "closed",
+        }
         prs = []
         prs_to_ignore = prs_to_ignore or {}
         for p in self.session.yield_paginated(endpoint, query_params):
