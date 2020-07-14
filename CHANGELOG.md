@@ -1,5 +1,18 @@
 # D3b Release Maker Change History
 
+## Release 1.4.0
+
+### Summary
+
+- Emojis: 🐛 x1, ✨ x1
+- Categories: Fixes x1, Additions x1
+
+### New features and changes
+
+- [#29](https://github.com/d3b-center/d3b-release-maker/pull/29) - 🐛 Catch newly merged PRs opened before last release - [4c2b5443](https://github.com/d3b-center/d3b-release-maker/commit/4c2b5443f62733059c43ece71ffe4aa7db8f7cc5) by [fiendish](https://github.com/fiendish)
+- [#28](https://github.com/d3b-center/d3b-release-maker/pull/28) - ✨ Allow omitting PRs from the change log - [0e3c5709](https://github.com/d3b-center/d3b-release-maker/commit/0e3c5709b5d2c4cc9f837ea06f560cf42fa7b702) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.3.0
 
 ### Summary
