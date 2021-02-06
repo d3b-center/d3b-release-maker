@@ -131,8 +131,9 @@ class GitHubReleaseNotes:
         """
         emojis = set()
         graphemes = regex.findall(r"\X", title)
+        emoji_rex = emoji.get_emoji_regexp()
         for i, g in enumerate(graphemes):
-            if any(char in emoji.UNICODE_EMOJI for char in g):
+            if emoji_rex.match(g):
                 emojis.add(g)
             else:  # stop after first non-hit
                 if g != " ":
@@ -239,6 +240,9 @@ class GitHubReleaseNotes:
                     )
                 )
             if len(counts["categories"]) > 0:
+                category_order = list(config.EMOJI_CATEGORIES.keys()) + [
+                    config.OTHER_CATEGORY
+                ]
                 category_sum = sum(counts["categories"].values())
                 if len(prs) > category_sum:
                     counts["categories"][config.OTHER_CATEGORY] += (
@@ -247,7 +251,8 @@ class GitHubReleaseNotes:
                 messages.append(
                     "- Categories: "
                     + ", ".join(
-                        f"{k} x{v}" for k, v in counts["categories"].items()
+                        f"{k} x{counts['categories'].get(k, 0)}"
+                        for k in category_order
                     )
                 )
             messages.append("")
