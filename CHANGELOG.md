@@ -1,5 +1,17 @@
 # D3b Release Maker Change History
 
+## Release 1.4.2
+
+### Summary
+
+- Emojis: 👽 x1
+- Categories: Additions x0, Documentation x0, Removals x0, Fixes x1, Ops x0, Other Changes x0
+
+### New features and changes
+
+- [#34](https://github.com/d3b-center/d3b-release-maker/pull/34) - 👽 Fix missing summary from emoji lib change - [fa624c2e](https://github.com/d3b-center/d3b-release-maker/commit/fa624c2e550209bd45d36d31180d61944a3f5002) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.4.1
 
 ### Summary
