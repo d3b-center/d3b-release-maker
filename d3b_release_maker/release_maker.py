@@ -251,8 +251,9 @@ class GitHubReleaseNotes:
                 messages.append(
                     "- Categories: "
                     + ", ".join(
-                        f"{k} x{counts['categories'].get(k, 0)}"
+                        f"{k} x{counts['categories'][k]}"
                         for k in category_order
+                        if k in counts["categories"]
                     )
                 )
             messages.append("")
