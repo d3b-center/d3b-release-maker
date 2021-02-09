@@ -1,5 +1,18 @@
 # D3b Release Maker Change History
 
+## Release 1.4.2
+
+### Summary
+
+- Emojis: 🩹 x1, 👽 x1
+- Categories: Fixes x1, Other Changes x1
+
+### New features and changes
+
+- [#37](https://github.com/d3b-center/d3b-release-maker/pull/37) - 🩹 Don't show 0x categories - [c9e6927b](https://github.com/d3b-center/d3b-release-maker/commit/c9e6927b6598799eabe214467174bee0ea4ea9e6) by [fiendish](https://github.com/fiendish)
+- [#34](https://github.com/d3b-center/d3b-release-maker/pull/34) - 👽 Fix missing summary from emoji lib change - [fa624c2e](https://github.com/d3b-center/d3b-release-maker/commit/fa624c2e550209bd45d36d31180d61944a3f5002) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.4.1
 
 ### Summary
