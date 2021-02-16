@@ -145,16 +145,16 @@ class GitHubReleaseNotes:
 
         return (emojis, title)
 
-    def _get_merged_prs(self, after, prs_to_ignore=None):
+    def _get_merged_prs(self, branch, after, prs_to_ignore=None):
         """
-        Get all non-release PRs merged into master after the given time
+        Get all non-release PRs merged into the given branch after the given time
         """
         print("Fetching PRs ...")
         endpoint = f"{self.base_url}/pulls"
         query_params = {
             "sort": "updated",
             "direction": "desc",
-            "base": "master",
+            "base": branch,
             "state": "closed",
         }
         prs = []
@@ -278,6 +278,7 @@ class GitHubReleaseNotes:
 
         # Set up session
         self.base_url = f"{GH_API}/repos/{repo}"
+        default_branch = self.session.get(self.base_url).json()["default_branch"]
 
         # Get tag of last release
         print("Fetching latest tag ...")
@@ -289,8 +290,9 @@ class GitHubReleaseNotes:
             print("No tags found")
             latest_tag = {"name": "0.0.0", "date": ""}
 
-        # Get all non-release PRs that were merged into master after the last release
-        prs = self._get_merged_prs(latest_tag["date"], prs_to_ignore)
+        # Get all non-release PRs that were merged into the main branch after
+        # the last release
+        prs = self._get_merged_prs(default_branch, latest_tag["date"], prs_to_ignore)
 
         # Count the emojis and fix missing spaces in titles
         counts = {"emojis": defaultdict(int), "categories": defaultdict(int)}
@@ -326,7 +328,7 @@ class GitHubReleaseNotes:
         print(f"Previous version: {prev_version}")
         print(f"New version: {version}")
 
-        return version, markdown
+        return default_branch, version, markdown
 
 
 def new_notes(repo, blurb_file, prs_to_ignore):
@@ -350,7 +352,8 @@ def new_changelog(repo, blurb_file, prs_to_ignore):
     """
     Creates release notes markdown containing:
     - The next release version number
-    - A changelog of Pull Requests merged into master since the last release
+    - A changelog of Pull Requests merged into the main branch since the last
+      release
     - Emoji and category summaries for Pull Requests in the release
 
     Then merges that into the existing changelog.
@@ -358,19 +361,19 @@ def new_changelog(repo, blurb_file, prs_to_ignore):
 
     # Build notes for new changes
 
-    new_version, new_markdown = new_notes(repo, blurb_file, prs_to_ignore)
+    branch, new_version, new_markdown = new_notes(repo, blurb_file, prs_to_ignore)
 
     if new_version not in new_markdown.partition("\n")[0]:
         print(
             f"New version '{new_version}' not in release title of new markdown."
         )
-        return None, None, None
+        return None, None, None, None
 
     # Load previous changelog file
 
     session = GitHubSession()
     try:
-        prev_markdown = session.get(f"{GH_RAW}/{repo}/master/{CHANGEFILE}").text
+        prev_markdown = session.get(f"{GH_RAW}/{repo}/{branch}/{CHANGEFILE}").text
     except UnknownObjectException:
         prev_markdown = ""
 
@@ -385,10 +388,10 @@ def new_changelog(repo, blurb_file, prs_to_ignore):
 
     if new_version in prev_markdown.partition("\n")[0]:
         print(f"\nNew version '{new_version}' already in {CHANGEFILE}.")
-        return None, None, None
+        return None, None, None, None
     else:
         changelog = "\n\n".join([new_markdown, prev_markdown]).rstrip()
-        return new_version, new_markdown, changelog
+        return branch, new_version, new_markdown, changelog
 
 
 def load_config():
@@ -427,7 +430,7 @@ def make_release(repo, blurb_file, prs_to_ignore):
     Generate a new changelog, run the script, and then make a PR on GitHub
     """
     gh_token = os.getenv(config.GH_TOKEN_VAR)
-    new_version, new_markdown, changelog = new_changelog(
+    default_branch, new_version, new_markdown, changelog = new_changelog(
         repo, blurb_file, prs_to_ignore
     )
 
@@ -508,7 +511,7 @@ def make_release(repo, blurb_file, prs_to_ignore):
         gh_repo = Github(gh_token, base_url=GH_API).get_repo(repo)
         pr_title = f"{config.NEW_RELEASE_EMOJI} Release {new_version}"
         pr_url = None
-        for p in gh_repo.get_pulls(state="open", base="master"):
+        for p in gh_repo.get_pulls(state="open", base=default_branch):
             if p.title == pr_title:
                 pr_url = p.html_url
                 break
@@ -520,7 +523,7 @@ def make_release(repo, blurb_file, prs_to_ignore):
                 title=pr_title,
                 body=new_markdown,
                 head=release_branch_name,
-                base="master",
+                base=default_branch,
             )
             pr.add_to_labels("release")
             print(f"Created release PR: {pr.html_url}")
