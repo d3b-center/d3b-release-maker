@@ -7,10 +7,12 @@ on:
   pull_request:
     types:
       - closed
+    branches: 
+      - $default-branch
 
 jobs:
   create_release:
-    if: github.base_ref == $default-branch && github.event.pull_request.merged && contains( github.event.pull_request.labels.*.name, 'release')
+    if: github.event.pull_request.merged && contains( github.event.pull_request.labels.*.name, 'release')
     runs-on: ubuntu-latest
     steps:
 
