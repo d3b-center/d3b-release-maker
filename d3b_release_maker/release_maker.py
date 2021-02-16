@@ -261,7 +261,7 @@ class GitHubReleaseNotes:
         messages.extend(["### New features and changes", ""])
 
         for p in prs:
-            if p['merge_commit_sha'] is None:
+            if p["merge_commit_sha"] is None:
                 continue
             userlink = f"[{p['user']['login']}]({p['user']['html_url']})"
             sha_link = f"[{p['merge_commit_sha'][:8]}](https://github.com/{repo}/commit/{p['merge_commit_sha']})"
@@ -280,7 +280,9 @@ class GitHubReleaseNotes:
 
         # Set up session
         self.base_url = f"{GH_API}/repos/{repo}"
-        default_branch = self.session.get(self.base_url).json()["default_branch"]
+        default_branch = self.session.get(self.base_url).json()[
+            "default_branch"
+        ]
 
         # Get tag of last release
         print("Fetching latest tag ...")
@@ -294,7 +296,9 @@ class GitHubReleaseNotes:
 
         # Get all non-release PRs that were merged into the main branch after
         # the last release
-        prs = self._get_merged_prs(default_branch, latest_tag["date"], prs_to_ignore)
+        prs = self._get_merged_prs(
+            default_branch, latest_tag["date"], prs_to_ignore
+        )
 
         # Count the emojis and fix missing spaces in titles
         counts = {"emojis": defaultdict(int), "categories": defaultdict(int)}
@@ -363,7 +367,9 @@ def new_changelog(repo, blurb_file, prs_to_ignore):
 
     # Build notes for new changes
 
-    branch, new_version, new_markdown = new_notes(repo, blurb_file, prs_to_ignore)
+    branch, new_version, new_markdown = new_notes(
+        repo, blurb_file, prs_to_ignore
+    )
 
     if new_version not in new_markdown.partition("\n")[0]:
         print(
@@ -375,7 +381,9 @@ def new_changelog(repo, blurb_file, prs_to_ignore):
 
     session = GitHubSession()
     try:
-        prev_markdown = session.get(f"{GH_RAW}/{repo}/{branch}/{CHANGEFILE}").text
+        prev_markdown = session.get(
+            f"{GH_RAW}/{repo}/{branch}/{CHANGEFILE}"
+        ).text
     except UnknownObjectException:
         prev_markdown = ""
 
