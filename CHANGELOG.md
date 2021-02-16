@@ -4,6 +4,20 @@
 
 ### Summary
 
+- Emojis: 💚 x1, 🐛 x1, ✨ x1
+- Categories: Additions x1, Fixes x1, Ops x1
+
+### New features and changes
+
+- [#44](https://github.com/d3b-center/d3b-release-maker/pull/44) - 💚 GitHub's default-branch variable instructions are unclear - [dde2ecc1](https://github.com/d3b-center/d3b-release-maker/commit/dde2ecc14923f6f0178ba4e98aef3d82f1be74ec) by [fiendish](https://github.com/fiendish)
+- [#40](https://github.com/d3b-center/d3b-release-maker/pull/40) - 🐛 Don't include commitless PRs - [b059d455](https://github.com/d3b-center/d3b-release-maker/commit/b059d4550dc557d43ae3bab5f504cf77046d11f3) by [fiendish](https://github.com/fiendish)
+- [#39](https://github.com/d3b-center/d3b-release-maker/pull/39) - ✨ Use repo default branch instead of 'master' - [8c7aab62](https://github.com/d3b-center/d3b-release-maker/commit/8c7aab622bd17ea13c2c61c21a0ae3f709f90274) by [fiendish](https://github.com/fiendish)
+
+
+## Release 1.5.0
+
+### Summary
+
 - Emojis: 🐛 x1, ✨ x1
 - Categories: Additions x1, Fixes x1
 
