@@ -261,6 +261,8 @@ class GitHubReleaseNotes:
         messages.extend(["### New features and changes", ""])
 
         for p in prs:
+            if p['merge_commit_sha'] is None:
+                continue
             userlink = f"[{p['user']['login']}]({p['user']['html_url']})"
             sha_link = f"[{p['merge_commit_sha'][:8]}](https://github.com/{repo}/commit/{p['merge_commit_sha']})"
             pr_link = f"[#{p['number']}]({p['html_url']})"
