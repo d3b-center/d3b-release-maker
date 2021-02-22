@@ -3,7 +3,7 @@
 Tool to automate GitHub-based software releases for projects with the following
 characteristics:
 
-- Feature branching with merge-commits into master
+- Feature branching with merge-commits into your default branch
 - Gitmoji-style PR messages
 - Semantic versioning tags for releases (<https://semver.org>)
 
@@ -26,7 +26,7 @@ one per line, in the order that you want them to appear.
 
 ### Step 2 (optional): Add release_cfg.json to your project repository
 
-Add a `release_maker_cfg.json` file to your repository's master branch. Its
+Add a `release_maker_cfg.json` file to your repository's default branch. Its
 contents should be as follows:
 
 ```json
@@ -62,7 +62,7 @@ setup(
 )
 ```
 
-See <https://github.com/d3b-center/d3b-release-maker/blob/master/setup.py> for
+See <https://github.com/d3b-center/d3b-release-maker/blob/main/setup.py> for
 an example.
 
 If you use one of the other setuptools configuration methods (e.g.
@@ -91,8 +91,8 @@ approved and merged, the workflow generates the release.
 When you run the `release build` command:
 
 1. The CLI looks at the most recent git tag that looks like a Semantic Version.
-2. Then it looks for all PRs that were merged into master after that tag which
-   do not themselves look like a release merge.
+2. Then it looks for all PRs that were merged into the default branch after that
+   tag which do not themselves look like a release merge.
 3. Emojis at the start of the PR titles are grouped and counted according to
    the gitmoji emoji guide (<https://gitmoji.carloscuesta.me>).
 4. Markdown is generated with links to PRs, merge commits, and committers and is
@@ -106,12 +106,12 @@ When you run the `release build` command:
 8. An optional user-provided script is then run if you need to e.g. add the new
    version number to files in your repository.
 9. All newly modified files are commited with a special release commit and
-   pushed to a special release branch, and a Pull Request into master is opened
-   on GitHub for review.
+   pushed to a special release branch, and a Pull Request into the default
+   branch is opened on GitHub for review.
 
 ### What the GitHub Actions Workflow does
 
-When a special release branch is merged into master:
+When a special release branch is merged into the default branch:
 
 1. Your repository is tagged with the new semantic version and also a rolling
    tag called 'latest-release' for use with `pip`, and a GitHub release is
