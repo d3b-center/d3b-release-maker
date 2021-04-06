@@ -3,6 +3,7 @@ import os
 import shutil
 import stat
 import subprocess
+import sys
 import tempfile
 import time
 from collections import defaultdict
@@ -13,10 +14,11 @@ import click
 import emoji
 import regex
 import semver
-from d3b_release_maker import config
 from d3b_utils.requests_retry import Session
 from github import Github
 from github.GithubException import GithubException, UnknownObjectException
+
+from d3b_release_maker import config
 
 GH_API = config.GITHUB_API
 GH_RAW = config.GITHUB_RAW
@@ -145,7 +147,7 @@ class GitHubReleaseNotes:
 
         return (emojis, title)
 
-    def _get_merged_prs(self, branch, after, prs_to_ignore=None):
+    def _get_merged_prs(self, branch, after):
         """
         Get all non-release PRs merged into the given branch after the given time
         """
@@ -158,17 +160,14 @@ class GitHubReleaseNotes:
             "state": "closed",
         }
         prs = []
-        prs_to_ignore = prs_to_ignore or {}
         for p in self.session.yield_paginated(endpoint, query_params):
             if p["merged_at"]:  # only the merged PRs
                 if p["updated_at"] < after:
                     # stop looking if last update was before the last release
                     break
                 elif (
-                    (p["merged_at"] > after)  # ignore old PRs with updates
-                    and (p["number"] not in prs_to_ignore)
-                    and (regex.search(release_pattern, p["title"]) is None)
-                ):
+                    p["merged_at"] > after  # ignore old PRs with updates
+                ) and (regex.search(release_pattern, p["title"]) is None):
                     prs.append(p)
         return sorted(prs, key=lambda x: x["merged_at"], reverse=True)
 
@@ -206,7 +205,9 @@ class GitHubReleaseNotes:
         """
         Get next release version based on prev version using semver format
         """
-        prev_version = semver.VersionInfo.parse(prev_version).finalize_version()
+        prev_version = semver.VersionInfo.parse(
+            prev_version or "0.0.0"
+        ).finalize_version()
         if release_type == MAJOR:
             new_version = prev_version.bump_major()
         elif release_type == MINOR:
@@ -221,19 +222,31 @@ class GitHubReleaseNotes:
 
         return str(new_version)
 
-    def _to_markdown(self, repo, counts, prs):
+    def _prs_to_markdown(self, repo, prs, blurb, scratchout_prs):
         """
         Converts accumulated information about the project into markdown
         """
-        messages = []
+        lines = []
 
+        # Count the emojis and fix missing spaces in titles
+        counts = {"emojis": defaultdict(int), "categories": defaultdict(int)}
+        for p in prs:
+            if p["number"] not in scratchout_prs:
+                emojis, p["title"] = self._starting_emojis(p["title"].strip())
+                for e in emojis:
+                    counts["emojis"][e] += 1
+                    counts["categories"][
+                        emoji_categories.get(e, config.OTHER_CATEGORY)
+                    ] += 1
+                if not emojis:
+                    counts["emojis"]["?"] += 1
+                    counts["categories"][config.OTHER_CATEGORY] += 1
+
+        # Add emoji and category summary markdown
         if (len(counts["emojis"]) + len(counts["categories"])) > 0:
-            messages.extend(["### Summary", ""])
+            lines.extend(["### Summary", ""])
             if len(counts["emojis"]) > 0:
-                emoji_sum = sum(counts["emojis"].values())
-                if len(prs) > emoji_sum:
-                    counts["emojis"]["?"] += len(prs) - emoji_sum
-                messages.append(
+                lines.append(
                     "- Emojis: "
                     + ", ".join(
                         f"{k} x{v}" for k, v in counts["emojis"].items()
@@ -243,12 +256,7 @@ class GitHubReleaseNotes:
                 category_order = list(config.EMOJI_CATEGORIES.keys()) + [
                     config.OTHER_CATEGORY
                 ]
-                category_sum = sum(counts["categories"].values())
-                if len(prs) > category_sum:
-                    counts["categories"][config.OTHER_CATEGORY] += (
-                        len(prs) - category_sum
-                    )
-                messages.append(
+                lines.append(
                     "- Categories: "
                     + ", ".join(
                         f"{k} x{counts['categories'][k]}"
@@ -256,23 +264,30 @@ class GitHubReleaseNotes:
                         if k in counts["categories"]
                     )
                 )
-            messages.append("")
+            lines.append("")
 
-        messages.extend(["### New features and changes", ""])
-
+        # Add changelist markdown
+        lines.extend(["### New features and changes", ""])
         for p in prs:
             if p["merge_commit_sha"] is None:
                 continue
             userlink = f"[{p['user']['login']}]({p['user']['html_url']})"
             sha_link = f"[{p['merge_commit_sha'][:8]}](https://github.com/{repo}/commit/{p['merge_commit_sha']})"
             pr_link = f"[#{p['number']}]({p['html_url']})"
-            messages.append(
-                f"- {pr_link} - {p['title']} - {sha_link} by {userlink}"
-            )
+            new_line = f"- {pr_link} - {p['title']} - {sha_link} by {userlink}"
+            if p["number"] in scratchout_prs:
+                new_line = "\u0336".join(new_line) + "\u0336"
+            lines.append(new_line)
 
-        return "\n".join(messages)
+        markdown = "\n".join(lines)
 
-    def build_release_notes(self, repo, blurb=None, prs_to_ignore=None):
+        # Add blurb markdown
+        if blurb:
+            return f"{blurb}\n\n" + markdown
+
+        return markdown
+
+    def build_release_notes(self, repo, blurb=None):
         """
         Make release notes
         """
@@ -292,32 +307,56 @@ class GitHubReleaseNotes:
             print(f"Latest tag: {latest_tag}")
         else:
             print("No tags found")
-            latest_tag = {"name": "0.0.0", "date": ""}
+            latest_tag = {"name": "", "date": ""}
 
         # Get all non-release PRs that were merged into the main branch after
         # the last release
-        prs = self._get_merged_prs(
-            default_branch, latest_tag["date"], prs_to_ignore
-        )
+        prs = self._get_merged_prs(default_branch, latest_tag["date"])
 
-        # Count the emojis and fix missing spaces in titles
-        counts = {"emojis": defaultdict(int), "categories": defaultdict(int)}
-        for p in prs:
-            emojis, p["title"] = self._starting_emojis(p["title"].strip())
-            for e in emojis:
-                counts["emojis"][e] += 1
-                counts["categories"][
-                    emoji_categories.get(e, config.OTHER_CATEGORY)
-                ] += 1
+        if not prs:
+            print("No new PRs found since last release")
+            sys.exit(0)
 
-        # Compose markdown
-        markdown = self._to_markdown(repo, counts, prs)
-        if blurb:
-            markdown = f"{blurb}\n\n" + markdown
+        # Preview list and ask to ignore PRs
+        def split_list(list_str):
+            parts = set()
+            if list_str:
+                for k in list_str.split(","):
+                    try:
+                        parts.add(int(k.strip()))
+                    except ValueError:
+                        raise click.BadParameter(
+                            f"{k} is not an integer", param=k
+                        )
+            return parts
 
-        print("=" * 32 + "BEGIN DELTA" + "=" * 32)
-        print(markdown)
-        print("=" * 33 + "END DELTA" + "=" * 33)
+        def preview(markdown):
+            print("\nRelease markdown will be...")
+            print("=" * 32 + "BEGIN DELTA" + "=" * 32)
+            print(markdown)
+            print("=" * 33 + "END DELTA" + "=" * 33, "\n")
+
+        prs_to_ignore = set()
+        while True:
+            markdown = self._prs_to_markdown(repo, prs, blurb, prs_to_ignore)
+            preview(markdown)
+            prs_to_toggle = click.prompt(
+                "Comma-separated PR numbers to ignore/unignore (strikethrough lines will be omitted)",
+                default="",
+                value_proc=split_list,
+            )
+            if prs_to_toggle:
+                for p in prs_to_toggle:
+                    if p in prs_to_ignore:
+                        prs_to_ignore.remove(p)
+                    else:
+                        prs_to_ignore.add(p)
+            else:
+                if prs_to_ignore:
+                    prs = [p for p in prs if p["number"] not in prs_to_ignore]
+                    markdown = self._prs_to_markdown(repo, prs, blurb, {})
+                    preview(markdown)
+                break
 
         release_type = click.prompt(
             "What type of semantic versioning release is this?",
@@ -337,7 +376,7 @@ class GitHubReleaseNotes:
         return default_branch, version, markdown
 
 
-def new_notes(repo, blurb_file, prs_to_ignore):
+def new_notes(repo, blurb_file):
     """
     Build notes for new changes
     """
@@ -346,15 +385,10 @@ def new_notes(repo, blurb_file, prs_to_ignore):
         with open(blurb_file, "r") as bf:
             blurb = bf.read().strip()
 
-    if prs_to_ignore != "":
-        prs_to_ignore = {int(k.strip()) for k in prs_to_ignore.split(",")}
-
-    return GitHubReleaseNotes().build_release_notes(
-        repo=repo, blurb=blurb, prs_to_ignore=prs_to_ignore
-    )
+    return GitHubReleaseNotes().build_release_notes(repo=repo, blurb=blurb)
 
 
-def new_changelog(repo, blurb_file, prs_to_ignore):
+def new_changelog(repo, blurb_file):
     """
     Creates release notes markdown containing:
     - The next release version number
@@ -367,9 +401,7 @@ def new_changelog(repo, blurb_file, prs_to_ignore):
 
     # Build notes for new changes
 
-    branch, new_version, new_markdown = new_notes(
-        repo, blurb_file, prs_to_ignore
-    )
+    branch, new_version, new_markdown = new_notes(repo, blurb_file)
 
     if new_version not in new_markdown.partition("\n")[0]:
         print(
@@ -435,13 +467,13 @@ def load_config():
     return cfg
 
 
-def make_release(repo, blurb_file, prs_to_ignore):
+def make_release(repo, blurb_file):
     """
     Generate a new changelog, run the script, and then make a PR on GitHub
     """
     gh_token = os.getenv(config.GH_TOKEN_VAR)
     default_branch, new_version, new_markdown, changelog = new_changelog(
-        repo, blurb_file, prs_to_ignore
+        repo, blurb_file
     )
 
     if changelog:
