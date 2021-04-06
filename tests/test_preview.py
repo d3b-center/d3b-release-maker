@@ -1,22 +1,18 @@
 #!/usr/bin/env python
-from click.testing import CliRunner
+from d3b_release_maker.release_maker import GitHubReleaseNotes
 
 import pytest
-from d3b_release_maker.cli import preview_changelog_cmd
 
 
 @pytest.mark.parametrize(
-    "type,index", [("foo\nmajor", 0), ("foo\nminor", 1), ("foo\npatch", 2)]
+    "type,mapping",
+    [
+        ("major", {"1.2.3": "2.0.0", "": "1.0.0"}),
+        ("minor", {"1.2.3": "1.3.0", "": "0.1.0"}),
+        ("patch", {"1.2.3": "1.2.4", "": "0.0.1"}),
+    ],
 )
-def test_version(type, index):
-    runner = CliRunner()
-    result = runner.invoke(
-        preview_changelog_cmd,
-        args='--repo d3b-center/d3b-release-maker --blurb_file "" --prs_to_ignore ""',
-        input=f"{type}",
-    )
-    assert result.exit_code == 0
-    lastlines = result.output.splitlines()[-2:]
-    versions = [line.split(": ")[1] for line in lastlines]
-    version_parts = [int(v.split(".")[index]) for v in versions]
-    assert version_parts[1] == version_parts[0] + 1
+def test_version(type, mapping):
+    grn = GitHubReleaseNotes()
+    for start, end in mapping.items():
+        assert grn._next_release_version(start, type) == end
