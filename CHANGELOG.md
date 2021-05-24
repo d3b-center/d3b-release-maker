@@ -1,5 +1,17 @@
 # D3b Release Maker Change History
 
+## Release 2.0.0
+
+### Summary
+
+- Emojis: 🚸 x1
+- Categories: Fixes x1
+
+### New features and changes
+
+- [#48](https://github.com/d3b-center/d3b-release-maker/pull/48) - 🚸 Ask to omit PRs interactively with live preview - [e4aee334](https://github.com/d3b-center/d3b-release-maker/commit/e4aee334d6e1ec63fe4ccd9727a74258c0e9d618) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 1.5.0
 
 ### Summary
