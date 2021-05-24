@@ -1,6 +1,6 @@
 Click==7.1.2
 d3b_utils @ git+https://git@github.com/d3b-center/d3b-utils-python.git
 emoji==1.2.0
-regex==2020.11.13
+regex==2021.4.4
 semver==2.13.0
 PyGithub==1.54.1
