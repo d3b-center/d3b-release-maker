@@ -7,7 +7,7 @@ characteristics:
 - Gitmoji-style PR messages
 - Semantic versioning tags for releases (<https://semver.org>)
 
-## Steps for Using
+## Part I: Changes Needed In Your Repository
 
 ### Step 1: Add the GitHub Actions Workflow to your project repository
 
@@ -69,22 +69,53 @@ If you use one of the other setuptools configuration methods (e.g.
 `pyproject.toml`), read <https://github.com/pypa/setuptools_scm/> for the
 equivalent of the above.
 
-### Step 4: Run the CLI that generates release notes and creates a PR on GitHub for review
+## Part II: The CLI that updates release notes and creates a GitHub release PR
 
-Install the latest release of the release maker with pip:
-`pip install git+https://github.com/d3b-center/d3b-release-maker.git@latest-release`
+### Step 1: Install the CLI tool
 
-Create a temporary auth token on GitHub and add it to your environment as
-`GH_TOKEN`.
+1. Install the latest release of the release maker with pip:
 
-Then run: `release --help`
+    `pip install --upgrade git+https://github.com/d3b-center/d3b-release-maker.git@latest-release`
 
-### Step 5: Review and merge the PR
+2. Create an authentication token on GitHub at https://github.com/settings/tokens
+
+    If you only want to release public repositories, you don't need to grant the
+token any authorization scopes. If you want to release private repositories as
+well, the token needs the "repo" scope.
+
+    The release CLI tool will prompt you to enter a token when needed, or you can
+populate a `GH_TOKEN` environment variable and then it won't prompt you unless
+the stored token is invalid.
+
+### Step 2: Run the CLI tool
+
+Run `release preview` to explore what running the tool is like.
+
+Run `release build` to actually do the release.
+
+### Step 3: Review and merge the PR
 
 The CLI tool creates a special release PR for everyone to review. When it's
-approved and merged, the workflow generates the release.
+approved and merged, the GitHub Actions workflow finalizes the release.
 
 ## What the parts do
+
+### What the GitHub Actions Workflow does
+
+When a special release branch is merged into the default branch:
+
+1. Your repository is tagged with the new semantic version and also a rolling
+   tag called 'latest-release' for use with `pip`, and a GitHub release is
+   created with the contents of the just-merged Pull Request body.
+2. If a `.github/prepare_assets.sh` script exists, it is run.
+3. If a `.github/release_assets.txt` file exists, any files listed in it are
+   then uploaded to the GitHub release.
+
+### What the setuptools modification does
+
+It uses the repository's semantic version release tags as the Python package
+version instead of needing to separately store the version somewhere in the
+repository files.
 
 ### What the CLI does
 
@@ -108,20 +139,3 @@ When you run the `release build` command:
 9. All newly modified files are commited with a special release commit and
    pushed to a special release branch, and a Pull Request into the default
    branch is opened on GitHub for review.
-
-### What the GitHub Actions Workflow does
-
-When a special release branch is merged into the default branch:
-
-1. Your repository is tagged with the new semantic version and also a rolling
-   tag called 'latest-release' for use with `pip`, and a GitHub release is
-   created with the contents of the just-merged Pull Request body.
-2. If a `.github/prepare_assets.sh` script exists, it is run.
-3. If a `.github/release_assets.txt` file exists, any files listed in it are
-   then uploaded to the GitHub release.
-
-### What the setuptools modification does
-
-It uses the repository's semantic version release tags as the Python package
-version instead of needing to separately store the version somewhere in the
-repository files.

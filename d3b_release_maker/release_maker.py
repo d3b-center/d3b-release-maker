@@ -38,11 +38,20 @@ emoji_categories = {
     for e in emoji_set
 }
 
-if not os.getenv(config.GH_TOKEN_VAR):
-    gh_token = getpass(
-        prompt=f"Required GitHub API token not found at {config.GH_TOKEN_VAR} in your environment. Please enter one here: "
-    )
-    os.environ[config.GH_TOKEN_VAR] = gh_token
+
+def get_gh_api_token():
+    while not os.getenv(config.GH_TOKEN_VAR, "").strip():
+        gh_token = getpass(
+            prompt=(
+                f"\nNOTICE: A GitHub API token (https://github.com/settings/tokens) was either not provided or was provided but is invalid.\n"
+                'The provided token doesn\'t need any access scopes to work for public repositories but must have the "repo" scope to work for private ones.\n'
+                f"To avoid this notice, you may store the token in a variable called {config.GH_TOKEN_VAR} in your shell environment.\n\n"
+                "Please enter a valid GitHub API token now: "
+            )
+        )
+        os.environ[config.GH_TOKEN_VAR] = gh_token
+
+    return os.getenv(config.GH_TOKEN_VAR).strip()
 
 
 def split_at_pattern(text, pattern):
@@ -75,10 +84,10 @@ def delay_until(datetime_of_reset):
 class GitHubSession(Session):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def update_headers(self):
         self.headers.update({"Accept": "application/vnd.github.v3.raw+json"})
-        gh_token = os.getenv(config.GH_TOKEN_VAR)
-        if gh_token:
-            self.headers.update({"Authorization": "token " + gh_token})
+        self.headers.update({"Authorization": "token " + get_gh_api_token()})
 
     def get(self, url, **request_kwargs):
         """
@@ -86,12 +95,15 @@ class GitHubSession(Session):
         Otherwise return original response
         """
         while True:
+            self.update_headers()
             response = super().get(url, **request_kwargs)
             if response.status_code != 200:
                 if response.status_code == 404:
                     raise UnknownObjectException(
                         response.status_code, response.url
                     )
+                elif response.status_code == 401:
+                    del os.environ[config.GH_TOKEN_VAR]
                 elif response.headers.get("X-Ratelimit-Remaining") == "0":
                     print(
                         response.json().get("message"),
@@ -471,7 +483,7 @@ def make_release(repo, blurb_file):
     """
     Generate a new changelog, run the script, and then make a PR on GitHub
     """
-    gh_token = os.getenv(config.GH_TOKEN_VAR)
+    gh_token = get_gh_api_token()
     default_branch, new_version, new_markdown, changelog = new_changelog(
         repo, blurb_file
     )
