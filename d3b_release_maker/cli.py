@@ -20,7 +20,7 @@ def get_repository():
         return None
 
     result = result.decode().strip()
-    match = re.match(r".*:([\w\d0-9-]+\/[\w\d-]+)", result)
+    match = re.match(r".*[:/]([\w\d0-9-]+\/[\w\d-]+)", result)
     if match:
         return match.group(1)
     return None
