@@ -1,5 +1,18 @@
 # D3b Release Maker Change History
 
+## Release 2.1.0
+
+### Summary
+
+- Emojis: 🛂 x1, 🐛 x1
+- Categories: Fixes x1, Other Changes x1
+
+### New features and changes
+
+- [#53](https://github.com/d3b-center/d3b-release-maker/pull/53) - 🛂 Improve GH token prompting - [d611b5ae](https://github.com/d3b-center/d3b-release-maker/commit/d611b5ae363b4472a8aa57df17372d67835dae44) by [fiendish](https://github.com/fiendish)
+- [#52](https://github.com/d3b-center/d3b-release-maker/pull/52) - 🐛 Discover repo org/name for https clones as well - [a1ce4e39](https://github.com/d3b-center/d3b-release-maker/commit/a1ce4e3950fae083d7f0c2b0d6148f39fff1055f) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 2.0.0
 
 ### Summary
