@@ -44,7 +44,7 @@ def get_gh_api_token():
         gh_token = getpass(
             prompt=(
                 f"\nNOTICE: A GitHub API token (https://github.com/settings/tokens) was either not provided or was provided but is invalid.\n"
-                'The provided token doesn\'t need any access scopes to work for public repositories but must have the "repo" scope to work for private ones.\n'
+                'The provided token needs "public_repo" access to work for public repositories or "repo" scope to work for private ones.\n'
                 f"To avoid this notice, you may store the token in a variable called {config.GH_TOKEN_VAR} in your shell environment.\n\n"
                 "Please enter a valid GitHub API token now: "
             )
