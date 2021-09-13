@@ -79,13 +79,18 @@ equivalent of the above.
 
 2. Create an authentication token on GitHub at https://github.com/settings/tokens
 
-    If you only want to release public repositories, you don't need to grant the
-token any authorization scopes. If you want to release private repositories as
-well, the token needs the "repo" scope.
+    The release tool CLI will prompt you to enter your token when needed, or
+    you can populate a `GH_TOKEN` environment variable and then it won't prompt
+    you unless the stored token is invalid.
 
-    The release CLI tool will prompt you to enter a token when needed, or you can
-populate a `GH_TOKEN` environment variable and then it won't prompt you unless
-the stored token is invalid.
+    For public repositories, you only need to grant the "`public_repo`"
+    authorization scope.
+
+    <img alt="public scope screenshot" src="img/public_scope_token.png" width="409">
+
+    For private repositories, the token needs the full "`repo`" scope.
+
+    <img alt="private scope screenshot" src="img/private_scope_token.png" width="409">
 
 ### Step 2: Run the CLI tool
 
