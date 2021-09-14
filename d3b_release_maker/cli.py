@@ -1,29 +1,11 @@
 #!/usr/bin/env python
 import click
-import re
-import subprocess
 
-from d3b_release_maker.release_maker import make_release, new_notes
-
-
-def get_repository():
-    """
-    Try to retrieve the github repository by extracting it from the current git
-    repository's 'origin' url.
-    """
-    try:
-        result = subprocess.check_output(
-            ["git", "remote", "get-url", "origin"], stderr=subprocess.DEVNULL
-        )
-    except subprocess.CalledProcessError:
-        # If the git command fails, bail early
-        return None
-
-    result = result.decode().strip()
-    match = re.match(r".*[:/]([\w\d0-9-]+\/[\w\d-]+)", result)
-    if match:
-        return match.group(1)
-    return None
+from d3b_release_maker.release_maker import (
+    make_release,
+    new_notes,
+    get_repository,
+)
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -37,13 +19,13 @@ def cli():
 def options(function):
     function = click.option(
         "--blurb_file",
-        prompt="Optional markdown file containing a custom message to prepend to the notes for this release",
+        prompt="Pick an optional markdown file containing a custom message to prepend to the notes for this release",
         default="",
         help="Optional markdown file containing a custom message to prepend to the notes for this release",
     )(function)
     function = click.option(
         "--repo",
-        prompt="The github repository (e.g. my-organization/my-project-name)",
+        prompt="Pick the github repository (e.g. my-organization/my-project-name)",
         help="The github organization/repository to make a release for",
         default=get_repository,
     )(function)

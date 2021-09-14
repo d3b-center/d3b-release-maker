@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 import stat
 import subprocess
 import sys
@@ -39,17 +38,50 @@ emoji_categories = {
 }
 
 
-def get_gh_api_token():
-    while not os.getenv(config.GH_TOKEN_VAR, "").strip():
-        gh_token = getpass(
-            prompt=(
-                f"\nNOTICE: A GitHub API token (https://github.com/settings/tokens) was either not provided or was provided but is invalid.\n"
-                'The provided token needs "public_repo" access to work for public repositories or "repo" scope to work for private ones.\n'
-                f"To avoid this notice, you may store the token in a variable called {config.GH_TOKEN_VAR} in your shell environment.\n\n"
-                "Please enter a valid GitHub API token now: "
-            )
+def get_repository():
+    """
+    Try to retrieve the github repository by extracting it from the current git
+    repository's 'origin' url.
+    """
+    try:
+        result = subprocess.check_output(
+            ["git", "remote", "get-url", "origin"], stderr=subprocess.DEVNULL
         )
-        os.environ[config.GH_TOKEN_VAR] = gh_token
+    except subprocess.CalledProcessError:
+        # If the git command fails, bail early
+        return None
+
+    result = result.decode().strip()
+    match = regex.match(r".*[:/]([\w\d0-9-]+\/[\w\d-]+)", result)
+    if match:
+        return match.group(1)
+    return None
+
+
+def get_gh_api_token(previous=None):
+    """Prompt for a good GitHub API token
+
+    :param previous: [description], defaults to None
+    :type previous: [type], optional
+    :return: [description]
+    :rtype: [type]
+    """
+    msg = "\nNOTICE: A GitHub API token (https://github.com/settings/tokens)"
+    if not previous:
+        msg += " was either not provided or"
+
+    msg += (
+        " was provided but is not valid or does not have sufficient permission.\n\n"
+        'The GitHub API token needs "public_repo" access to work for only public'
+        ' repositories or "repo" scope to work for both public and private ones.\n'
+        "To avoid this notice, you may store the token in a variable called "
+        f"{config.GH_TOKEN_VAR} in your shell environment.\n\n"
+        "Please enter a valid GitHub API token now OR press enter to try the same one again: "
+    )
+    while not os.getenv(config.GH_TOKEN_VAR, "").strip():
+        os.environ[config.GH_TOKEN_VAR] = getpass(prompt=msg)
+        if previous and not os.environ[config.GH_TOKEN_VAR]:
+            os.environ[config.GH_TOKEN_VAR] = previous
 
     return os.getenv(config.GH_TOKEN_VAR).strip()
 
@@ -98,10 +130,14 @@ class GitHubSession(Session):
             self.update_headers()
             response = super().get(url, **request_kwargs)
             if response.status_code != 200:
+                status = f"Got error {response.status_code} when fetching '{response.url}'"
+                try:
+                    msg = response.json()
+                except json.decoder.JSONDecodeError:
+                    msg = response.text
+
                 if response.status_code == 404:
-                    raise UnknownObjectException(
-                        response.status_code, response.url
-                    )
+                    raise UnknownObjectException(status, msg)
                 elif response.status_code == 401:
                     del os.environ[config.GH_TOKEN_VAR]
                 elif response.headers.get("X-Ratelimit-Remaining") == "0":
@@ -114,10 +150,7 @@ class GitHubSession(Session):
                     )
                     delay_until(datetime_of_reset)
                 else:
-                    raise GithubException(
-                        response.status_code,
-                        f"Could not fetch {response.url}! Caused by: {response.text}",
-                    )
+                    raise GithubException(status, msg)
             else:
                 break
 
@@ -484,28 +517,54 @@ def make_release(repo, blurb_file):
     Generate a new changelog, run the script, and then make a PR on GitHub
     """
     gh_token = get_gh_api_token()
-    default_branch, new_version, new_markdown, changelog = new_changelog(
-        repo, blurb_file
-    )
+    while True:
+        try:
+            (
+                default_branch,
+                new_version,
+                new_markdown,
+                changelog,
+            ) = new_changelog(repo, blurb_file)
+            break
+        except UnknownObjectException as e:
+            # Didn't find the repo. Bad token? Bad url?
+            yes = click.confirm(f"{e.status}. Is that URL 100% correct?")
+            if yes:
+                del os.environ[config.GH_TOKEN_VAR]
+                gh_token = get_gh_api_token(gh_token)
+            else:
+                repo = click.prompt(
+                    "Pick the github repository (e.g. my-organization/my-project-name)",
+                    default=get_repository(),
+                )
 
     if changelog:
-        # Freshly clone repo
-        tmp = os.path.join(tempfile.gettempdir(), "release_maker")
-        shutil.rmtree(tmp, ignore_errors=True)
-        print(f"Cloning https://github.com/{repo}.git to {tmp} ...")
-        subprocess.run(
-            [
-                "git",
-                "clone",
-                "--depth",
-                "1",
-                f"https://{gh_token}@github.com/{repo}.git",
-                tmp,
-            ],
-            check=True,
-            capture_output=True,
-        )
-        os.chdir(tmp)
+        # Freshly clone repo into a clean workspace
+        while True:
+            tmp = tempfile.TemporaryDirectory()
+            os.chdir(tmp.name)
+            subprocess.run(["git", "init", "--quiet"])
+
+            try:
+                print(
+                    f"Cloning https://github.com/{repo}.git to temporary location..."
+                )
+                subprocess.run(
+                    [
+                        "git",
+                        "pull",
+                        "--quiet",
+                        "--depth",
+                        "1",
+                        f"https://{gh_token}:x-oauth-basic@github.com/{repo}.git",
+                    ],
+                    check=True,
+                    capture_output=True,
+                )
+                break
+            except subprocess.CalledProcessError:
+                del os.environ[config.GH_TOKEN_VAR]
+                gh_token = get_gh_api_token(gh_token)
 
         # Get the configuration
         cfg = load_config()
@@ -554,11 +613,23 @@ def make_release(repo, blurb_file):
             check=True,
             capture_output=True,
         )
-        subprocess.run(
-            ["git", "push", "--force", "origin", release_branch_name],
-            check=True,
-            capture_output=True,
-        )
+        while True:
+            try:
+                subprocess.run(
+                    [
+                        "git",
+                        "push",
+                        "--force",
+                        f"https://{gh_token}:x-oauth-basic@github.com/{repo}.git",
+                        release_branch_name,
+                    ],
+                    check=True,
+                    capture_output=True,
+                )
+                break
+            except subprocess.CalledProcessError:
+                del os.environ[config.GH_TOKEN_VAR]
+                gh_token = get_gh_api_token(gh_token)
 
         # Create GitHub Pull Request
         print("Submitting PR for release ...")
