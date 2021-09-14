@@ -1,5 +1,18 @@
 # D3b Release Maker Change History
 
+## Release 2.1.1
+
+### Summary
+
+- Emojis: 📝 x2
+- Categories: Documentation x2
+
+### New features and changes
+
+- [#57](https://github.com/d3b-center/d3b-release-maker/pull/57) - 📝 Update runtime token message as well - [91a4311c](https://github.com/d3b-center/d3b-release-maker/commit/91a4311c290f4a0f9c160fce7d023ce8a73075b5) by [fiendish](https://github.com/fiendish)
+- [#56](https://github.com/d3b-center/d3b-release-maker/pull/56) - 📝 Fix GH token scope description in readme - [066e8055](https://github.com/d3b-center/d3b-release-maker/commit/066e80557a66556481f53faec7541e7342151977) by [fiendish](https://github.com/fiendish)
+
+
 ## Release 2.1.0
 
 ### Summary
