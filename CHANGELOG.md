@@ -1,5 +1,17 @@
 # D3b Release Maker Change History
 
+## Release 2.2.0
+
+### Summary
+
+- Emojis: 👽️ x1
+- Categories: Other Changes x1
+
+### New features and changes
+
+- [#64](https://github.com/d3b-center/d3b-release-maker/pull/64) - 👽️ add newer gitmoji emojis - [737bcef8](https://github.com/d3b-center/d3b-release-maker/commit/737bcef8a79cf057163f25e3ce91a6d61be264b2) by [chris-s-friedman](https://github.com/chris-s-friedman)
+
+
 ## Release 2.1.1
 
 ### Summary
