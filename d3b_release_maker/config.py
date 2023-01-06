@@ -10,9 +10,29 @@ PAST_RELEASE_EMOJIS = "🏷🔖"
 NEW_RELEASE_EMOJI = "🏷"
 NEW_RELEASE_EMOJI_SHORTCODE = ":label:"
 EMOJI_CATEGORIES = {
-    "Additions": {"✨", "🎉", "📈", "➕", "🌐", "🔀", "🔊"},
+    "Additions": {
+        "✨",
+        "🎉",
+        "📈",
+        "➕",
+        "🌐",
+        "🔀",
+        "🔊",
+        "💄",
+        "✅",
+        "♻️",
+        "🔨",
+        "🍱",
+        "💥",
+        "🥚",
+        "👔",
+        "🩺",
+        "🧑‍💻",
+        "🧵",
+        "🦺",
+    },
     "Documentation": {"💡", "📝"},
-    "Removals": {"🔥", "➖", "⏪", "🔇", "🗑"},
+    "Removals": {"🔥", "➖", "⏪", "🔇", "🗑", "⚰️"},
     "Fixes": {
         "🐛",
         "🚑",
@@ -30,6 +50,7 @@ EMOJI_CATEGORIES = {
         "💬",
         "🚸",
         "🥅",
+        "🩹",
     },
     "Ops": {
         "🚀",
@@ -46,6 +67,10 @@ EMOJI_CATEGORIES = {
         "☸️",
         "🌱",
         "🚩",
+        "🔧",
+        "🔐",
+        "🗃️",
+        "🧱",
     },
 }
 OTHER_CATEGORY = "Other Changes"
