@@ -1,5 +1,17 @@
 # D3b Release Maker Change History
 
+## Release 2.2.1
+
+### Summary
+
+- Emojis: 🔧 x1
+- Categories: Ops x1
+
+### New features and changes
+
+- [#66](https://github.com/d3b-center/d3b-release-maker/pull/66) - 🔧 add token permissions to release workflow - [514e69d3](https://github.com/d3b-center/d3b-release-maker/commit/514e69d3e7f0af0d2f37db39e9d62a7548522a4d) by [chris-s-friedman](https://github.com/chris-s-friedman)
+
+
 ## Release 2.2.0
 
 ### Summary
